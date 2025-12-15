@@ -1,12 +1,16 @@
 use axum::{
-    routing::{get, put},
-    http::StatusCode,
     Json, Router,
+    http::StatusCode,
+    routing::{get, put},
 };
-use serde::{Deserialize};
+use serde::Deserialize;
+
+mod kv;
 
 #[tokio::main]
 async fn main() {
+    // TODO: get env
+
     let app = Router::new()
         .route("/data", get(get_data))
         .route("/data", put(put_data));
@@ -16,17 +20,19 @@ async fn main() {
 }
 
 async fn get_data(Json(payload): Json<GetData>) -> String {
-    format!("Hello world {}", payload.key)
+    // TODO: caching?
+    kv::get_value(&payload.key).unwrap_or(String::new())
 }
 
 async fn put_data(Json(payload): Json<PutData>) -> StatusCode {
+    // TODO: auth
     // TODO: impl
     StatusCode::UNAUTHORIZED
 }
 
 #[derive(Deserialize)]
 struct GetData {
-    key: String
+    key: String,
 }
 
 #[derive(Deserialize)]
