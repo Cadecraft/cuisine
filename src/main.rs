@@ -27,7 +27,10 @@ async fn get_data(Json(payload): Json<GetData>) -> String {
 async fn put_data(Json(payload): Json<PutData>) -> StatusCode {
     // TODO: auth
     // TODO: impl
-    StatusCode::UNAUTHORIZED
+    match kv::put_value(&payload.key, &payload.value) {
+        Ok(_) => StatusCode::OK,
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+    }
 }
 
 #[derive(Deserialize)]
