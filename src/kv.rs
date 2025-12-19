@@ -48,5 +48,7 @@ pub fn put_value(key: &str, val: &str) -> io::Result<()> {
 
     fs::write(file_path, val)?;
 
+    // TODO: delete the key if value is empty
+
     Ok(())
 }
