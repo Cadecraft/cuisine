@@ -9,6 +9,7 @@ use std::collections::hash_map::HashMap;
 use std::env;
 use std::sync::{Arc, Mutex, MutexGuard};
 
+use cuisine::auth;
 mod kv;
 
 #[tokio::main]
@@ -30,7 +31,8 @@ async fn main() {
         env::var("HOST").unwrap(),
         env::var("PORT").unwrap()
     );
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+    println!("Listening on {}", addr);
     axum::serve(listener, app).await.unwrap();
 }
 
@@ -47,7 +49,9 @@ async fn get_data(State(state): State<AppState>, Json(payload): Json<GetData>) -
 }
 
 async fn put_data(State(state): State<AppState>, Json(payload): Json<PutData>) -> StatusCode {
-    // TODO: auth
+    if !auth::is_authorized(&payload.password) {
+        return StatusCode::UNAUTHORIZED;
+    }
     match kv::put_value(&payload.key, &payload.value) {
         Ok(_) => {
             // Update cache
@@ -73,6 +77,9 @@ fn assert_env() {
     for var in needed {
         env::var(var).expect(&format!("{} must be provided", var));
     }
+    if !auth::is_valid_argon2(&env::var("ADMIN_AUTH").unwrap()) {
+        panic!("ADMIN_AUTH must be a valid argon2 hash");
+    }
 }
 
 #[derive(Deserialize)]
@@ -84,7 +91,7 @@ struct GetData {
 struct PutData {
     key: String,
     value: String,
-    auth: String,
+    password: String,
 }
 
 #[derive(Clone)]

@@ -10,19 +10,19 @@ The data is persistent (writes to disk), and the server caches results for perfo
 
 ### API
 ```
-# Gets the key at test
+# -> gets the value of the key at test
 GET /data key=test
 
-# Puts the value at the key
-PUT /data key=test value=abc auth=mypassword
+# -> puts the value at the key
+PUT /data key=test value=abc password=mybadpassword
 
-# Empty string deletes the key
-PUT /data key=test value= auth=mypassword
+# Empty string -> deletes the key
+PUT /data key=test value= password=mybadpassword
 
 # Error: key must be underscores, lowercase letters, or numbers
 PUT /data key=!* value=abc auth=mypassword
 
-# Nonexistent or invalid key gives empty string
+# Nonexistent or invalid key -> empty string
 GET /data key=!*
 ```
 
