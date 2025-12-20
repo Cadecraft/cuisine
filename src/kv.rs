@@ -1,10 +1,9 @@
+use std::env;
 use std::fs;
 use std::io;
 use std::path::Path;
 
-const RELATIVE_KV_PATH: &str = "/kv";
-
-/// Whether the string contains only underscores and lowercase letters
+/// Valid keys contain only underscores and lowercase letters
 fn valid_key(s: &str) -> bool {
     s.len() > 0
         && s.chars()
@@ -12,7 +11,7 @@ fn valid_key(s: &str) -> bool {
 }
 
 fn get_kv_dir() -> String {
-    format!("{}{}", ".", RELATIVE_KV_PATH)
+    env::var("KV_PATH").unwrap()
 }
 
 /// Get the value given a key, or an empty string if it does not exist
@@ -32,7 +31,7 @@ pub fn get_value(key: &str) -> io::Result<String> {
 }
 
 /// Update the value of a key. If the value is an empty string, delete the key
-pub fn put_value(key: &str, val: &str) -> io::Result<()> {
+pub fn put_value(key: &str, value: &str) -> io::Result<()> {
     if !valid_key(key) {
         return Err(io::Error::new(
             io::ErrorKind::Other,
@@ -46,7 +45,11 @@ pub fn put_value(key: &str, val: &str) -> io::Result<()> {
 
     let file_path = kv_dir_path.join(key);
 
-    fs::write(file_path, val)?;
+    if value.is_empty() {
+        fs::remove_file(file_path)?;
+    } else {
+        fs::write(file_path, value)?;
+    }
 
     Ok(())
 }
