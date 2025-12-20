@@ -1,19 +1,21 @@
 use axum::{
     Json, Router,
     extract::State,
-    http::StatusCode,
+    http::{HeaderValue, Method, StatusCode},
     routing::{get, put},
 };
 use serde::Deserialize;
 use std::collections::hash_map::HashMap;
 use std::env;
 use std::sync::{Arc, Mutex, MutexGuard};
+use tower_http::cors::{Any, CorsLayer};
 
 use cuisine::auth;
 mod kv;
 
 #[tokio::main]
 async fn main() {
+    // TODO: allow no .env
     dotenvy::dotenv().expect(".env must exist");
     assert_env();
 
@@ -21,10 +23,22 @@ async fn main() {
         cache: Arc::new(Mutex::new(HashMap::new())),
     };
 
+    let allowed_origins: Vec<HeaderValue> = env::var("ALLOWED_ORIGINS")
+        .unwrap_or(String::new())
+        .split(',')
+        .map(|s| s.parse().expect("An allowed origin could not be parsed"))
+        .collect();
+
     let app = Router::new()
         .route("/data", get(get_data))
         .route("/data", put(put_data))
-        .with_state(state);
+        .with_state(state)
+        .layer(
+            CorsLayer::new()
+                .allow_headers(Any)
+                .allow_methods([Method::GET, Method::PUT])
+                .allow_origin(allowed_origins),
+        );
 
     let addr = format!(
         "{}:{}",
