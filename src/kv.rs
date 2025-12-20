@@ -32,7 +32,7 @@ pub fn get_value(key: &str) -> io::Result<String> {
 }
 
 /// Update the value of a key. If the value is an empty string, delete the key
-pub fn put_value(key: &str, val: &str) -> io::Result<()> {
+pub fn put_value(key: &str, value: &str) -> io::Result<()> {
     if !valid_key(key) {
         return Err(io::Error::new(
             io::ErrorKind::Other,
@@ -46,9 +46,11 @@ pub fn put_value(key: &str, val: &str) -> io::Result<()> {
 
     let file_path = kv_dir_path.join(key);
 
-    fs::write(file_path, val)?;
-
-    // TODO: delete the key if value is empty
+    if value.is_empty() {
+        fs::remove_file(file_path)?;
+    } else {
+        fs::write(file_path, value)?;
+    }
 
     Ok(())
 }

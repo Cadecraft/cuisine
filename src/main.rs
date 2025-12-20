@@ -1,8 +1,8 @@
 use axum::{
     Json, Router,
+    extract::State,
     http::StatusCode,
     routing::{get, put},
-    extract::State
 };
 use serde::Deserialize;
 use std::collections::hash_map::HashMap;
@@ -15,7 +15,7 @@ async fn main() {
     // TODO: get env
 
     let state = AppState {
-        cache: Arc::new(Mutex::new(HashMap::new()))
+        cache: Arc::new(Mutex::new(HashMap::new())),
     };
 
     let app = Router::new()
@@ -48,7 +48,7 @@ async fn put_data(State(state): State<AppState>, Json(payload): Json<PutData>) -
             let mut cache = state.cache.lock().expect("Mutex was poisoned");
             put_in_cache(&mut cache, payload.key, payload.value);
             StatusCode::OK
-        },
+        }
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
     }
 }
