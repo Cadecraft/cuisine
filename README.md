@@ -33,4 +33,4 @@ cargo run
 ```
 
 ## Deployment
-This can be deployed anywhere that offers persistent file storage, e.g. Railway volumes
+This can be deployed anywhere that offers persistent file storage, e.g. Railway volumes. Update the `KV_PATH` environment variable accordingly

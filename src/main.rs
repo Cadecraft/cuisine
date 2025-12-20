@@ -69,7 +69,7 @@ fn put_in_cache(cache: &mut MutexGuard<'_, HashMap<String, String>>, key: String
 
 /// Ensure the proper environment variables are provided
 fn assert_env() {
-    let needed = ["ADMIN_AUTH", "HOST", "PORT"];
+    let needed = ["ADMIN_AUTH", "HOST", "PORT", "KV_PATH"];
     for var in needed {
         env::var(var).expect(&format!("{} must be provided", var));
     }

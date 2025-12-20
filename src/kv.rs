@@ -1,11 +1,9 @@
+use std::env;
 use std::fs;
 use std::io;
 use std::path::Path;
 
-// TODO: from env
-const RELATIVE_KV_PATH: &str = "/kv";
-
-/// Whether the string contains only underscores and lowercase letters
+/// Valid keys contain only underscores and lowercase letters
 fn valid_key(s: &str) -> bool {
     s.len() > 0
         && s.chars()
@@ -13,7 +11,7 @@ fn valid_key(s: &str) -> bool {
 }
 
 fn get_kv_dir() -> String {
-    format!("{}{}", ".", RELATIVE_KV_PATH)
+    env::var("KV_PATH").unwrap()
 }
 
 /// Get the value given a key, or an empty string if it does not exist
