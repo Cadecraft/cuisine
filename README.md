@@ -1,10 +1,10 @@
 # cuisine
 
-A simple backend for serving my list of favorite foods. Not much else
+A simple backend for storing my list of favorite foods. Not much else
 
 ## Features
 
-This is a very simple key-value store.
+This is a very simple key-value store, with the use case of frequent fetches and infrequent updates.
 
 The data is persistent (writes to disk), and the server caches results for performance.
 
@@ -14,10 +14,10 @@ The data is persistent (writes to disk), and the server caches results for perfo
 GET /data key=test
 
 # -> puts the value at the key
-PUT /data key=test value=abc password=mybadpassword
+PUT /data key=test value=abc password=mypassword
 
 # Empty string -> deletes the key
-PUT /data key=test value= password=mybadpassword
+PUT /data key=test value= password=mypassword
 
 # Error: key must be underscores, lowercase letters, or numbers
 PUT /data key=!* value=abc auth=mypassword
@@ -27,7 +27,7 @@ GET /data key=!*
 ```
 
 ## Development
-Simply add a `.env` file based on `.env.example`, then run:
+Simply add a `.env` file based on `.env.example` (a utility is provided for hashing your password), then run:
 ```sh
 cargo run
 ```
