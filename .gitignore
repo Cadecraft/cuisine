@@ -1,2 +1,5 @@
 /target
 /kv
+
+.env
+.env.local

@@ -27,7 +27,7 @@ GET /data key=!*
 ```
 
 ## Development
-Simply:
+Simply add a `.env` file based on `.env.example`, then run:
 ```sh
 cargo run
 ```

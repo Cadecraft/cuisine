@@ -2,6 +2,7 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
+// TODO: from env
 const RELATIVE_KV_PATH: &str = "/kv";
 
 /// Whether the string contains only underscores and lowercase letters

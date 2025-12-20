@@ -6,13 +6,15 @@ use axum::{
 };
 use serde::Deserialize;
 use std::collections::hash_map::HashMap;
+use std::env;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 mod kv;
 
 #[tokio::main]
 async fn main() {
-    // TODO: get env
+    dotenvy::dotenv().expect(".env must exist");
+    assert_env();
 
     let state = AppState {
         cache: Arc::new(Mutex::new(HashMap::new())),
@@ -23,8 +25,12 @@ async fn main() {
         .route("/data", put(put_data))
         .with_state(state);
 
-    // TODO: env for port
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
+    let addr = format!(
+        "{}:{}",
+        env::var("HOST").unwrap(),
+        env::var("PORT").unwrap()
+    );
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
@@ -58,6 +64,14 @@ fn put_in_cache(cache: &mut MutexGuard<'_, HashMap<String, String>>, key: String
         cache.remove(&key);
     } else {
         cache.insert(key, value);
+    }
+}
+
+/// Ensure the proper environment variables are provided
+fn assert_env() {
+    let needed = ["ADMIN_AUTH", "HOST", "PORT"];
+    for var in needed {
+        env::var(var).expect(&format!("{} must be provided", var));
     }
 }
 
