@@ -1,5 +1,6 @@
 use axum::{
     Json, Router,
+    extract::Query,
     extract::State,
     http::{HeaderValue, Method, StatusCode},
     routing::{get, put},
@@ -50,13 +51,14 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn get_data(State(state): State<AppState>, Json(payload): Json<GetData>) -> String {
+async fn get_data(State(state): State<AppState>, query: Query<GetData>) -> String {
+    let key = query.0.key;
     let mut cache = state.cache.lock().expect("Mutex was poisoned");
-    match cache.get(&payload.key) {
+    match cache.get(&key) {
         Some(cached) => cached.clone(),
         None => {
-            let new_val = kv::get_value(&payload.key).unwrap_or(String::new());
-            put_in_cache(&mut cache, payload.key, new_val.clone());
+            let new_val = kv::get_value(&key).unwrap_or(String::new());
+            put_in_cache(&mut cache, key, new_val.clone());
             new_val
         }
     }
