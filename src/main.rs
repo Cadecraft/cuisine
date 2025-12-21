@@ -16,8 +16,7 @@ mod kv;
 
 #[tokio::main]
 async fn main() {
-    // TODO: allow no .env
-    dotenvy::dotenv().expect(".env must exist");
+    let _ = dotenvy::dotenv();
     assert_env();
 
     let state = AppState {
