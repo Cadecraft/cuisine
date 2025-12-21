@@ -11,7 +11,7 @@ The data is persistent (writes to disk), and the server caches results for perfo
 ### API
 ```
 # -> gets the value of the key at test
-GET /data key=test
+GET /data?key=test
 
 # -> puts the value at the key
 PUT /data key=test value=abc password=mypassword
@@ -23,7 +23,7 @@ PUT /data key=test value= password=mypassword
 PUT /data key=!* value=abc auth=mypassword
 
 # Nonexistent or invalid key -> empty string
-GET /data key=!*
+GET /data?key=!*
 ```
 
 ## Development
