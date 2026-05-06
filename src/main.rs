@@ -1,8 +1,8 @@
 use axum::{
-    Json, Router,
+    Router,
     extract::{Multipart, Query, State},
     http::{HeaderValue, Method, StatusCode},
-    routing::{get, put},
+    routing::{get, post},
 };
 use serde::Deserialize;
 use std::collections::hash_map::HashMap;
@@ -35,7 +35,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/data", get(get_data))
-        .route("/data", put(put_data))
+        .route("/data", post(post_data))
         .with_state(state)
         .layer(
             CorsLayer::new()
@@ -78,7 +78,7 @@ struct PutData {
     value: String,
 }
 
-async fn parse_put_multipart(multipart: &mut Multipart) -> Option<PutData> {
+async fn parse_post_multipart(multipart: &mut Multipart) -> Option<PutData> {
     let mut res = PutData {
         password: String::new(),
         key: String::new(),
@@ -109,9 +109,9 @@ async fn parse_put_multipart(multipart: &mut Multipart) -> Option<PutData> {
 }
 
 // TODO: test and update documentation
-async fn put_data(State(state): State<AppState>, mut multipart: Multipart) -> StatusCode {
+async fn post_data(State(state): State<AppState>, mut multipart: Multipart) -> StatusCode {
     // Use multipart (as opposed to JSON) for performance with large files
-    let payload = match parse_put_multipart(&mut multipart).await {
+    let payload = match parse_post_multipart(&mut multipart).await {
         Some(p) => p,
         None => return StatusCode::BAD_REQUEST,
     };
