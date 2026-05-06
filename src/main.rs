@@ -1,7 +1,6 @@
 use axum::{
     Json, Router,
-    extract::Query,
-    extract::State,
+    extract::{Multipart, Query, State},
     http::{HeaderValue, Method, StatusCode},
     routing::{get, put},
 };
@@ -13,6 +12,11 @@ use tower_http::cors::{Any, CorsLayer};
 
 use cuisine::auth;
 mod kv;
+
+#[derive(Clone)]
+struct AppState {
+    cache: Arc<Mutex<HashMap<String, String>>>,
+}
 
 #[tokio::main]
 async fn main() {
@@ -50,6 +54,11 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
+#[derive(Deserialize)]
+struct GetData {
+    key: String,
+}
+
 async fn get_data(State(state): State<AppState>, query: Query<GetData>) -> String {
     let key = query.0.key;
     let mut cache = state.cache.lock().expect("Mutex was poisoned");
@@ -63,7 +72,50 @@ async fn get_data(State(state): State<AppState>, query: Query<GetData>) -> Strin
     }
 }
 
-async fn put_data(State(state): State<AppState>, Json(payload): Json<PutData>) -> StatusCode {
+struct PutData {
+    password: String,
+    key: String,
+    value: String,
+}
+
+async fn parse_put_multipart(multipart: &mut Multipart) -> Option<PutData> {
+    let mut res = PutData {
+        password: String::new(),
+        key: String::new(),
+        value: String::new(),
+    };
+    while let Some(field) = multipart.next_field().await.unwrap() {
+        let name = field.name().unwrap().to_string();
+        // TODO: check performance with large files
+        let data = field.bytes().await.unwrap();
+        let string_data = String::from_utf8(data.to_vec()).ok()?;
+
+        match name.as_str() {
+            "password" => {
+                res.password = string_data;
+            }
+            "key" => {
+                res.key = string_data;
+            }
+            "value" => {
+                res.value = string_data;
+            }
+            _ => {
+                return None;
+            }
+        };
+    }
+    Some(res)
+}
+
+// TODO: test and update documentation
+async fn put_data(State(state): State<AppState>, mut multipart: Multipart) -> StatusCode {
+    // Use multipart (as opposed to JSON) for performance with large files
+    let payload = match parse_put_multipart(&mut multipart).await {
+        Some(p) => p,
+        None => return StatusCode::BAD_REQUEST,
+    };
+
     if !auth::is_authorized(&payload.password) {
         return StatusCode::UNAUTHORIZED;
     }
@@ -95,21 +147,4 @@ fn assert_env() {
     if !auth::is_valid_argon2(&env::var("ADMIN_AUTH").unwrap()) {
         panic!("ADMIN_AUTH must be a valid argon2 hash");
     }
-}
-
-#[derive(Deserialize)]
-struct GetData {
-    key: String,
-}
-
-#[derive(Deserialize)]
-struct PutData {
-    key: String,
-    value: String,
-    password: String,
-}
-
-#[derive(Clone)]
-struct AppState {
-    cache: Arc<Mutex<HashMap<String, String>>>,
 }

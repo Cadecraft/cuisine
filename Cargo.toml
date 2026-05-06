@@ -1,11 +1,11 @@
 [package]
 name = "cuisine"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 default-run = "cuisine"
 
 [dependencies]
-axum = "0.8"
+axum = { version = "0.8", features = ["multipart"] }
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.0", features = ["full"] }
 dotenvy = "0.15"
