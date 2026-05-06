@@ -28,7 +28,7 @@ async fn main() {
     };
 
     let allowed_origins: Vec<HeaderValue> = env::var("ALLOWED_ORIGINS")
-        .unwrap_or(String::new())
+        .unwrap_or_default()
         .split(',')
         .map(|s| s.parse().expect("An allowed origin could not be parsed"))
         .collect();
@@ -65,7 +65,7 @@ async fn get_data(State(state): State<AppState>, query: Query<GetData>) -> Strin
     match cache.get(&key) {
         Some(cached) => cached.clone(),
         None => {
-            let new_val = kv::get_value(&key).unwrap_or(String::new());
+            let new_val = kv::get_value(&key).unwrap_or_default();
             put_in_cache(&mut cache, key, new_val.clone());
             new_val
         }
@@ -142,7 +142,7 @@ fn put_in_cache(cache: &mut MutexGuard<'_, HashMap<String, String>>, key: String
 fn assert_env() {
     let needed = ["ADMIN_AUTH", "HOST", "PORT", "KV_PATH"];
     for var in needed {
-        env::var(var).expect(&format!("{} must be provided", var));
+        env::var(var).unwrap_or_else(|_| panic!("{} must be provided", var));
     }
     if !auth::is_valid_argon2(&env::var("ADMIN_AUTH").unwrap()) {
         panic!("ADMIN_AUTH must be a valid argon2 hash");

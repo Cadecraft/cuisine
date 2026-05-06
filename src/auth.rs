@@ -16,7 +16,7 @@ pub fn hash_password(password: &str) -> Option<String> {
 }
 
 pub fn is_valid_argon2(hashed: &str) -> bool {
-    PasswordHash::new(&hashed).is_ok()
+    PasswordHash::new(hashed).is_ok()
 }
 
 pub fn is_authorized(password: &str) -> bool {
